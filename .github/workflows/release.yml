@@ -1,17 +1,141 @@
 
-def test_cli_import():
-    from saupgard import cli
+name: Secure TestPyPI Release
 
-    assert cli is not None
+on:
+  push:
+    tags:
+      - "v*"
 
+permissions:
+  contents: read
 
-def test_platform_check():
-    from saupgard.platform_check import check_platform
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
-    assert check_platform() == "Platform check successful"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12"]
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-def test_banner():
-    from saupgard.banner import get_banner
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    assert "Welcome to SoupGuard!" in get_banner()
+      - name: Install package and test tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest
+
+      - name: Run tests
+        run: python -m pytest -v
+
+  build:
+    name: Build and validate distributions
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate tag matches package version
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+
+          echo "Git tag version: $TAG_VERSION"
+          echo "Package version: $PACKAGE_VERSION"
+
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Error: Git tag and package version do not match."
+            exit 1
+          fi
+
+      - name: Install build tools
+        run: python -m pip install build twine
+
+      - name: Build wheel and source distribution
+        run: python -m build
+
+      - name: Validate distributions
+        run: python -m twine check dist/*
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+          if-no-files-found: error
+
+  verify-artifacts:
+    name: Test built artifacts in clean environments
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+
+      - name: Test wheel in a clean environment
+        run: |
+          python -m venv .venv-wheel
+          .venv-wheel/bin/python -m pip install --no-deps dist/*.whl
+          .venv-wheel/bin/python -c "from saupgard.banner import get_banner; print(get_banner())"
+          .venv-wheel/bin/saupgard --version
+
+      - name: Test source distribution in a clean environment
+        run: |
+          python -m venv .venv-sdist
+          .venv-sdist/bin/python -m pip install --no-deps dist/*.tar.gz
+          .venv-sdist/bin/python -c "from saupgard.banner import get_banner; print(get_banner())"
+          .venv-sdist/bin/saupgard --version
+
+  publish:
+    name: Publish to TestPyPI using OIDC
+    runs-on: ubuntu-latest
+    needs: verify-artifacts
+
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/saupgard
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download verified release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/
+
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
+          print-hash: true
