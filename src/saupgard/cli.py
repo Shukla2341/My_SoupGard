@@ -1,4 +1,4 @@
-from typing import Self
+#from typing import Self
 import argparse
 
 from saupgard import __version__
