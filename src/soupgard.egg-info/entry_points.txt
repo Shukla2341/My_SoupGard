@@ -1,0 +1,2 @@
+[console_scripts]
+soupgard = soupgard.cli:main

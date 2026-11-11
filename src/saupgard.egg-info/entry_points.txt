@@ -1,0 +1,2 @@
+[console_scripts]
+saupgard = saupgard.cli:main

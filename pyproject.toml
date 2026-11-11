@@ -1,0 +1,24 @@
+
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "saupgard"
+version = "0.1.0"
+description = "A reliable Python CLI package"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+saupgard = "saupgard.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+saupgard = ["data/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
