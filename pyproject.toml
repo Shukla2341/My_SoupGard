@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
-saupgard = "saupgard.wrong_cli:main"
+saupgard = "saupgard.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
