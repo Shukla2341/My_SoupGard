@@ -1,2 +1,2 @@
 [console_scripts]
-saupgard = saupgard.wrong_cli:main
+saupgard = saupgard.cli:main

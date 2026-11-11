@@ -1,0 +1,4 @@
+pip==26.3
+pytest==9.2.0
+build==1.6.1
+twine==7.0.0

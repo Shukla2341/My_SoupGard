@@ -29,11 +29,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install package and test tools
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e .
-          python -m pip install pytest
+      - name: Install pinned CI dependencies
+        run: python -m pip install -r requirements-ci.txt
+
+      - name: Install SoupGuard
+        run: python -m pip install --no-deps -e .
 
       - name: Run tests
         run: python -m pytest -v
@@ -66,8 +66,8 @@ jobs:
             exit 1
           fi
 
-      - name: Install build tools
-        run: python -m pip install build twine
+      - name: Install pinned build tools
+        run: python -m pip install -r requirements-ci.txt
 
       - name: Build wheel and source distribution
         run: python -m build
