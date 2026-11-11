@@ -1,0 +1,17 @@
+
+def test_cli_import():
+    from saupgard import cli
+
+    assert cli is not None
+
+
+def test_platform_check():
+    from saupgard.platform_check import check_platform
+
+    assert check_platform() == "Platform check successful"
+
+
+def test_banner():
+    from saupgard.banner import get_banner
+
+    assert "Welcome to SoupGuard!" in get_banner()
