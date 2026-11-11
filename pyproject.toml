@@ -12,13 +12,10 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
-saupgard = "saupgard.cli:main"
+saupgard = "saupgard.wrong_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-saupgard = ["data/*.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

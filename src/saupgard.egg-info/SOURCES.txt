@@ -1,6 +1,8 @@
 pyproject.toml
 src/saupgard/__init__.py
+src/saupgard/banner.py
 src/saupgard/cli.py
+src/saupgard/platform_check.py
 src/saupgard.egg-info/PKG-INFO
 src/saupgard.egg-info/SOURCES.txt
 src/saupgard.egg-info/dependency_links.txt
