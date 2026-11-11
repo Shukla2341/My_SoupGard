@@ -1,0 +1,20 @@
+
+name: Machine GPU Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gpu:
+    runs-on: machine/id=${{ github.run_id }}/gpu=t4g/tenancy=spot
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check NVIDIA GPU
+        run: nvidia-smi
